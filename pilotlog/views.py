@@ -22,7 +22,7 @@ class BaseView(View):
     @property
     @abstractmethod
     def service(self):
-        pass
+        raise NotImplementedError
 
 
 class ImporterView(BaseView):
