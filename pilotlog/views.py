@@ -2,10 +2,19 @@ from django.views import View
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 
+import csv
+from io import StringIO
+from django.http import HttpResponse
+from django.apps import apps
+
 from pilotlog import forms
 from pilotlog.models import Importer
-from pilotlog.services import ImporterService, ExtractorService
+from pilotlog.apps import PilotlogConfig
+from pilotlog.services import ImporterService, ExporterService
 from pilotlog.repositories import ImporterRepository
+
+from helpers.parser import ParseJson
+from helpers.logger import log_exception
 
 
 class ImporterView(View):
@@ -32,23 +41,29 @@ class ImporterView(View):
             try:
                 ImporterRepository.truncate_importer_table()
 
-                json_data = ExtractorService.process_json_file(uploaded_file)
-                importers = ImporterService.create_importers_from_json(json_data, Importer)
-                ImporterService.save(importers, Importer)
+                json_data = ParseJson.run(file=uploaded_file)
+                importer = ImporterService(model_name=Importer.__name__, app_name=PilotlogConfig.name)
+                importers = importer.create_importers_from_json(json_data=json_data)
+                ImporterService.save(importers=importers, model_link=Importer)
                 return redirect('importer')
             except ValueError as e:
                 form.add_error('file', str(e))
             except Exception as e:
-                form.add_error('file', f"An unexpected error occurred: {str(e)}")
+                message = f"An unexpected error occurred: {str(e)}"
+                log_exception(error=message)
+                form.add_error('file', message)
         return render(request, "pilotlog/importer.html", {"form": form})
 
 
 class ExporterView(View):
     def get(self, request, *args, **kwargs):
-        form = forms.ImporterForm()
-        return render(request, "pilotlog/exporter.html", {"form": form})
+        return render(request, "pilotlog/exporter.html")
 
     def post(self, request, *args, **kwargs):
-        print(args, kwargs)
-
-        return render(request, "pilotlog/exporter.html")
+        try:
+            exporter = ExporterService(model_name=Importer.__name__, app_name=PilotlogConfig.name)
+            return exporter.get_download_response()
+        except Exception as e:
+            message = f"An unexpected error occurred: {str(e)}"
+            log_exception(error=message)
+        return render(request, "pilotlog/exporter.html", context={"message": message})
