@@ -35,7 +35,10 @@ class ImporterService(BaseService):
         return importers
 
     def save(self, importers):
-        ImporterRepository.bulk_create_importers(importers, self._model)
+        ImporterRepository.bulk_create_importers(importers=importers, model_link=self._model)
+
+    def all(self):
+        return ImporterRepository.all(model_link=self._model)
 
 
 class ExporterService(BaseService):
