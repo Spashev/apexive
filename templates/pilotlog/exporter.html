@@ -1,0 +1,24 @@
+{% extends 'index.html' %}
+
+{% block title %}
+    Exporter
+{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <h2><a class="mb-4" href="{% url 'importer' %}">Importer</a></h2>
+            <h2 class="mb-4">Upload JSON File</h2>
+            <form method="post" action="{% url 'exporter' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Download</button>
+            </form>
+            {% if message %}
+                <div class="alert alert-success mt-3">
+                    {{ message }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+

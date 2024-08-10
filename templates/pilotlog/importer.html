@@ -1,0 +1,117 @@
+{% extends 'index.html' %}
+
+{% block title %}
+    Importer
+{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <h2><a class="mb-4" href="{% url 'exporter' %}">Exporter</a></h2>
+            <h2 class="mb-4">Upload JSON File</h2>
+            <form method="post" action="{% url 'importer' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.file.label_tag }}
+                    {{ form.file }}
+                    {% if form.file.errors %}
+                        <div class="text-danger">
+                            {{ form.file.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+            {% if message %}
+                <div class="alert alert-success mt-3">
+                    {{ message }}
+                </div>
+            {% endif %}
+            
+        {%  if data %}
+            <div class="mt-5">
+                <h3>Existing Importers</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Table</th>
+                            <th>GUID</th>
+                            <th>Meta</th>
+                            <th>Platform</th>
+                            <th>Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in data %}
+                            <tr>
+                                <td>{{ item.user_id }}</td>
+                                <td>{{ item.table }}</td>
+                                <td>{{ item.guid }}</td>
+                                <td>{{ item.meta }}</td>
+                                <td>{{ item.platform }}</td>
+                                <td>{{ item.modified }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6">No data available.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+    
+                        {% with page_obj.paginator.num_pages as total_pages %}
+                            {% with page_obj.number as current_page %}
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if num >= current_page|add:'-10' and num <= current_page|add:'10' or num == 1 or num == total_pages %}
+                                        {% if num == current_page %}
+                                            <li class="page-item active" aria-current="page">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% elif num == current_page|add:'-10' or num == current_page|add:'10' %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        {% endwith %}
+    
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {%  endif %}
+        </div>
+    </div>
+{% endblock %}
