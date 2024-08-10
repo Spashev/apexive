@@ -34,9 +34,8 @@ class ImporterService(BaseService):
             importers.append(importer)
         return importers
 
-    @staticmethod
-    def save(importers, model_link: models.Model):
-        ImporterRepository.bulk_create_importers(importers, model_link)
+    def save(self, importers):
+        ImporterRepository.bulk_create_importers(importers, self._model)
 
 
 class ExporterService(BaseService):

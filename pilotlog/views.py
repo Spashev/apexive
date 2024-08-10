@@ -40,11 +40,10 @@ class ImporterView(View):
             uploaded_file = request.FILES['file']
             try:
                 ImporterRepository.truncate_importer_table()
-
                 json_data = ParseJson.run(file=uploaded_file)
                 importer = ImporterService(model_name=Importer.__name__, app_name=PilotlogConfig.name)
                 importers = importer.create_importers_from_json(json_data=json_data)
-                ImporterService.save(importers=importers, model_link=Importer)
+                importer.save(importers=importers)
                 return redirect('importer')
             except ValueError as e:
                 form.add_error('file', str(e))
